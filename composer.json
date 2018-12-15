@@ -1,0 +1,29 @@
+{
+    "name": "alvin0/json-database",
+    "description": "PHP library to use JSON files like flat-file database",
+    "keywords": ["DatabaseJson", "simple", "json", "flat", "file", "database", "db"],
+    "repository-origin": "http://github.com/Greg0/DatabaseJson-Database",
+    "license": "MIT",
+    "editer": [
+        {
+            "name": "Alvin",
+            "email": "chaulamdinhai@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.5.1",
+        "phpunit/phpunit-skeleton-generator": "^2.0.1",
+        "mikey179/vfsStream": "^1.5.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "DatabaseJson\\Classes\\": "src/"
+        },
+        "classmap": [
+            "tests/"
+        ]
+    }
+}
