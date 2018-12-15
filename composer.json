@@ -1,8 +1,8 @@
 {
-    "name": "alvin0/json-database",
-    "description": "PHP library to use JSON files like flat-file database",
-    "keywords": ["DatabaseJson", "simple", "json", "flat", "file", "database", "db"],
-    "repository-origin": "http://github.com/Greg0/DatabaseJson-Database",
+    "name": "alvin0/database-json-laravel",
+    "description": "PHP library to use JSON files like flat-file database with Laravel",
+    "keywords": ["DatabaseJson", "simple", "json", "flat", "file", "database", "db","laravel"],
+    "homepage": "https://github.com/alvin0/DatabaseJsonLaravel",
     "license": "MIT",
     "editer": [
         {
