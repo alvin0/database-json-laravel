@@ -2,6 +2,10 @@
 
 Hi, on this page you will find some example of use my database.
 
+### Install
+
+composer require alvin0/database-json-laravel
+
 ### Find All
 
 ##### Query:

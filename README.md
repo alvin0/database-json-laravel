@@ -12,7 +12,7 @@ Requirements
 Installation
 -------
 
-composer require alvin0/json-database
+composer require alvin0/database-json-laravel
 
 Structure of table files
 -------
