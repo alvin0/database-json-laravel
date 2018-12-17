@@ -72,6 +72,7 @@ abstract class Core_Database implements \IteratorAggregate, \Countable
     public function setPagination()
     {
         $this->pagination = array(
+            'perPage'     => null,
             'totalPage'   => 1,
             'nextPage'    => 1,
             'lastPage'    => 1,
@@ -86,13 +87,18 @@ abstract class Core_Database implements \IteratorAggregate, \Countable
      */
     public function pagination($length)
     {
+        if (!ctype_digit(strval($length))) {
+            throw new DatabaseJsonException('input length paginate is integer');
+        }
         $this->pending();
+        $this->total                     = sizeof($this->data);
         $this->data                      = $this->resetKeys ? array_values($this->data) : null;
         $this->pagination['totalPage']   = max((int) ceil(sizeof($this->data) / $length), 1);
         $this->pagination['thisPage']    = isset($_GET['page']) ? ($_GET['page'] >= $this->pagination['totalPage'] ? $this->pagination['totalPage'] : $_GET['page']) : 1;
         $this->pagination['lastPage']    = $this->pagination['totalPage'];
         $this->pagination['nextPage']    = $this->pagination['totalPage'] > $this->pagination['thisPage'] ? $this->pagination['thisPage'] + 1 : $this->pagination['thisPage'];
         $this->pagination['currentPage'] = $this->pagination['thisPage'] > 1 ? $this->pagination['thisPage'] - 1 : $this->pagination['thisPage'];
+        $this->pagination['perPage']     = (int) $length;
         $this->getPaginations($length, $this->pagination['thisPage']);
         return clone $this;
     }
@@ -870,7 +876,8 @@ abstract class Core_Database implements \IteratorAggregate, \Countable
                 foreach ($data[$this->currentKey] as $field => $value) {
                     $this->set->{$field} = $value;
                 }
-                $this->data = $this->set;
+                $this->data  = $this->set;
+                $this->total = 1;
             } else {
                 return null;
             }
@@ -901,23 +908,13 @@ abstract class Core_Database implements \IteratorAggregate, \Countable
                 foreach ($data[$this->currentKey] as $field => $value) {
                     $this->set->{$field} = $value;
                 }
-                $this->data = $this->set;
+                $this->data  = $this->set;
+                $this->total = 1;
             } else {
                 throw new DatabaseJsonException('Can not find matching data in table ' . $this->name . ' with id = ' . $id);
             }
         } else {
-            $this->limit(1)->findAll();
-            $data = $this->data;
-            if (empty($data)) {
-                throw new DatabaseJsonException('Can not find matching data in table ' . $this->name . ' with id = ' . $id);
-            }
-            if (count($data)) {
-                foreach ($data[0] as $field => $value) {
-                    $this->set->{$field} = $value;
-                }
-                $this->currentId  = $this->set->id;
-                $this->currentKey = $this->getRowKey($this->currentId);
-            }
+            throw new DatabaseJsonException('Required parameter id is not null');
         }
         return clone $this;
     }
@@ -928,7 +925,8 @@ abstract class Core_Database implements \IteratorAggregate, \Countable
     public function findAll()
     {
         $this->pending();
-        $this->data = $this->resetKeys ? array_values($this->data) : $this->data;
+        $this->data  = $this->resetKeys ? array_values($this->data) : $this->data;
+        $this->total = sizeof($this->data);
         return clone $this;
     }
 
