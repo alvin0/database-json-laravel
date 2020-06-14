@@ -1,0 +1,27 @@
+<?php
+
+namespace DummyNamespace;
+
+use DatabaseJson\DatabaseJson;
+use DatabaseJson\Migration;
+
+class DummyClass extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        DatabaseJson::table('DummyTable')->addFields([
+            //'name' => 'string'
+            //{field_name} => {field_type} More information about field types and usage in PHPDoc
+        ]);
+
+        //DatabaseJson::table('DummyTable')->deleteFields([
+            //'name',
+            //{field_name}
+        //]);
+    }
+}

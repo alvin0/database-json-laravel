@@ -1,0 +1,10 @@
+<?php
+
+namespace DummyNamespace;
+
+use DatabaseJson\Model;
+
+class DummyClass extends Model
+{
+    //
+}
