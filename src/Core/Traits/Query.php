@@ -2,7 +2,6 @@
 namespace DatabaseJson\Core\Traits;
 
 use Carbon\Carbon;
-use DatabaseJson\Core\Helpers\Validate;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Str;
@@ -27,6 +26,7 @@ trait Query
 
         $className = get_called_class();
         $model = new $className($data);
+
         return $model->save($data);
     }
 
@@ -92,9 +92,11 @@ trait Query
     public function get()
     {
         $this->data = collect([]);
+
         if ($this->query) {
             $this->data = $this->makeModelData($this->query->findAll(), get_class($this));
         }
+
         return $this->data;
     }
 
@@ -121,10 +123,8 @@ trait Query
         }
 
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
-
         $perPage = $perPage ?: $this->model->perPage;
         $total = $this->data->count();
-
         $results = $this->data->forPage($page, $perPage);
 
         return new LengthAwarePaginator($results, $total, $perPage, $page, [
@@ -147,6 +147,21 @@ trait Query
         } else {
             try {
                 $this->data = $this->query->find($id)->getSet();
+
+                if (isset($this->data->created_at)) {
+                    $this->data->created_at = $this->asTimestamp($this->data->created_at);
+                }
+
+                if (isset($this->data->updated_at)) {
+                    $this->data->updated_at = $this->asTimestamp($this->data->updated_at);
+                }
+
+                if (count($this->appends)) {
+                    foreach ($this->appends as $key => $value) {
+                        $this->data->{$value} = $this->{$value} ?? null;
+                    }
+                }
+
                 foreach (array_keys((array) $this->attribute) as $key) {
                     $this->{$key} = $this->{$key} ?? null;
                 }
@@ -154,7 +169,9 @@ trait Query
                 return null;
             }
         }
+
         $this->clearQuery();
+
         return clone $this;
     }
 
@@ -168,6 +185,7 @@ trait Query
         $className = get_called_class();
         $model = new $className;
         $model->data = $model->makeModelData($model->objectTable()->findAll(), $className);
+
         return $model->data;
     }
 
@@ -231,24 +249,6 @@ trait Query
     }
 
     /**
-     * fillAttr
-     *
-     * @param  mixed $name
-     * @param  mixed $value
-     * @return void
-     */
-    public function fillAttr($name, $value)
-    {
-        if (Validate::table($this->getTable())->field($name) && Validate::table($this->getTable())->type($name, $value)) {
-            if (is_string($value) && false === mb_check_encoding($value, 'UTF-8')) {
-                $this->attribute->{$name} = utf8_encode($value);
-            } else {
-                $this->attribute->{$name} = $value;
-            }
-        }
-    }
-
-    /**
      * makeModelData
      *
      * @param  mixed $data
@@ -261,16 +261,34 @@ trait Query
 
         return collect($data)->transform(function ($item) use ($table, $classModel) {
             $model = new $classModel((array) $item, $table);
-            $model->data = collect(array_change_key_case((array) $item, CASE_LOWER))->transform(function ($item) use ($model) {
+            $model->data = (object) collect(array_change_key_case((array) $item, CASE_LOWER))->transform(function ($item, $key) use ($model) {
+
                 if (gettype($item) == 'object') {
-                    return collect($item->findAll())->toArray();
+                    if (get_class($item) == 'DatabaseJson\Core\Database') {
+                        return collect($item->findAll())->toArray();
+                    }
+                    return (array) $item;
                 }
+
+                if ($key == 'created_at' || $key == 'updated_at') {
+                    return $this->asTimestamp($item);
+                }
+
                 return $item;
-            });
-            foreach (array_keys((array) $model->attribute) as $key) {
-                $model->{$key} = $model->data[$key] ?? null;
+            })->toArray();
+
+            if (count($this->appends)) {
+                foreach ($this->appends as $key => $value) {
+                    $model->data->{$value} = $model->{$value} ?? null;
+                }
             }
+
+            foreach (array_keys((array) $model->attribute) as $key) {
+                $model->{$key} = $model->data->{$key} ?? null;
+            }
+
             $model->model = $classModel;
+
             return $model;
         });
     }
@@ -301,6 +319,7 @@ trait Query
             'hasMany' => 'all',
         ];
         $data = $this->{$relation}()->where($relationInfo['keys']['foreign'], $model->id);
+
         return $data->{$typeCollectDataByRelation[$relationInfo['type']]}();
     }
 
@@ -313,6 +332,7 @@ trait Query
     public function getWith($relations)
     {
         $type = gettype($relations);
+
         if ($type == 'array') {
             foreach ($relations as $relation) {
                 $checkMethod = method_exists($this, $relation) ? $this->{$relation}() : false;
@@ -324,6 +344,7 @@ trait Query
                 }
             }
         }
+
         if ($type == 'string') {
             $checkMethod = method_exists($this, $relations) ? $this->{$relations}() : false;
             if ($checkMethod) {
@@ -333,6 +354,7 @@ trait Query
                 throw new \Exception("Relation " . $relations . " doesn't exist");
             }
         }
+
         return $this;
     }
 }

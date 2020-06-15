@@ -337,7 +337,7 @@ class Relation
                         $query = $this->join($row);
 
                         if ($this->relationType == 'belongsTo') {
-                            $query = $query->get();
+                            $query = $query->findAll();
                             $query = reset($query)[0];
                         }
 

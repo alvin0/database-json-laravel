@@ -20,13 +20,14 @@ trait HasRelationships
      * @param  mixed $localKey
      * @return void
      */
-    public function belongsTo($class, $foreignKey = null, $localKey = 'id')
+    public function belongsTo($class, $localKey = null, $foreignKey = 'id')
     {
         $model = new $class;
-        $foreignKey = $foreignKey == null ? $model->primaryKey : $foreignKey;
+        $localKey = $localKey == null ? $this->generateForeignKey($model) : $localKey;
         $this->checkTable($model->table);
         $this->checkFillable($model->table, $foreignKey);
         Relation::table($this->table)->belongsTo($model->table)->localKey($localKey)->foreignKey($foreignKey)->setRelation();
+
         return $model;
     }
 
@@ -41,7 +42,7 @@ trait HasRelationships
     public function hasMany($class, $foreignKey = null, $localKey = 'id')
     {
         $model = new $class;
-        $foreignKey = $foreignKey == null ? $this->generateForeignKey($model->table) : $foreignKey;
+        $foreignKey = $foreignKey == null ? $this->generateForeignKey($model) : $foreignKey;
         $this->checkTable($model->table);
         $this->checkFillable($model->table, $foreignKey);
         Relation::table($this->table)->hasMany($model->table)->localKey($localKey)->foreignKey($foreignKey)->setRelation();
@@ -78,9 +79,9 @@ trait HasRelationships
      *
      * @return string
      */
-    public function generateForeignKey()
+    public function generateForeignKey($model)
     {
-        return Str::singular($this->table) . '_id';
+        return Str::singular($model->table) . '_id';
     }
 
     /**
