@@ -47,7 +47,7 @@ class MigrationCreator
      */
     public function create($name, $path, $table = null, $create = false)
     {
-        $this->ensureMigrationDoesntAlreadyExist($name, $path, $create);
+        $this->ensureMigrationDoesntAlreadyExist($name, $create, $path);
 
         // First we will get the stub file for the migration, which serves as a type
         // of template for the migration. Once we have those we will populate the
@@ -78,7 +78,7 @@ class MigrationCreator
      *
      * @throws \InvalidArgumentException
      */
-    protected function ensureMigrationDoesntAlreadyExist($name, $migrationPath = null, $create)
+    protected function ensureMigrationDoesntAlreadyExist($name, $create, $migrationPath = null)
     {
         if (!empty($migrationPath)) {
             $migrationFiles = $this->files->glob($migrationPath . '/Migrations/*.php');
