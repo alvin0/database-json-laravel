@@ -5,10 +5,10 @@ namespace DatabaseJson\Commands\Migrate;
 use DatabaseJson\Core\Helpers\Config;
 use DatabaseJson\Core\Helpers\Data;
 use DatabaseJson\DatabaseJson;
-use File;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Str;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class MigrateCommand extends Command
 {
@@ -17,7 +17,8 @@ class MigrateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'databasejson:migrate {--fresh : remove all table and up}';
+    protected $signature = 'databasejson:migrate {--fresh : remove all table and up}
+    {--path= : Specifies a path}';
 
     /**
      * The console command description.
@@ -37,6 +38,14 @@ class MigrateCommand extends Command
             File::deleteDirectory(config('databasejson.path'));
             $this->info('Database Json | Remove all database json success!');
         }
+
+        if ($this->option('path')) {
+            if ($this->runMigrateWithPath($this->option('path')) == false) {
+                $this->info('Database Json | Nothing to migrate');
+            }
+            return;
+        }
+
         $this->runAllMigrateUP();
     }
 
@@ -48,21 +57,32 @@ class MigrateCommand extends Command
     public function runAllMigrateUP()
     {
         $count = 0;
-        foreach (glob(app_path(config('databasejson.migrations_path', 'DatabaseJson') . '/Migrations/*.php')) as $class) {
-            $class = $this->getMigrationName($class);
-            $checkMigrate = $this->addMigrateToTableMigrates($class);
-            if ($checkMigrate) {
-                $count++;
-
-                $migration = $this->resolve($class);
-                $migration->up();
-
-                $this->info('Database Json | ' . $class . ' run success!');
-            }
+        $listFileMigrate = glob(app_path(config('databasejson.migrations_path', 'DatabaseJson') . '/Migrations/*.php'));
+        foreach ($listFileMigrate as $pathMigrate) {
+            $this->runMigrateWithPath($pathMigrate);
+            $count++;
         }
         if ($count == 0) {
             $this->info('Database Json | Nothing to migrate');
         }
+    }
+
+    /**
+     * handle migrate with path.
+     *
+     * @return mixed
+     */
+    public function runMigrateWithPath($path)
+    {
+        $class = $this->getMigrationName($path);
+        $checkMigrate = $this->addMigrateToTableMigrates($class);
+        if ($checkMigrate) {
+            $migration = $this->resolve($class);
+            $migration->up();
+            $this->info('Database Json | ' . $class . ' run success!');
+            return true;
+        }
+        return false;
     }
 
     /**

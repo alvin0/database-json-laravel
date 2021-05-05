@@ -144,7 +144,14 @@ class CreateTableUserMigrateMigrate extends  Migration
 
 }
 ```
+##### 2.3 Run Migrate
 
+    php artisan databasejson:migrate
+
+##### Optional
+
+--fresh : remove all table and up
+--path : Specify a path
 
 ### II. Basic Usage
 
