@@ -183,9 +183,9 @@ class MigrationCreator
     protected function getPath($name, $path, $create)
     {
         if (!$create) {
-            return $path . '/migrations/' . $this->getDatePrefix() . '_update_table_' . $name . '_migrate.php';
+            return $path . '/Migrations/' . $this->getDatePrefix() . '_update_table_' . $name . '_migrate.php';
         }
-        return $path . '/migrations/' . $this->getDatePrefix() . '_create_table_' . $name . '_migrate.php';
+        return $path . '/Migrations/' . $this->getDatePrefix() . '_create_table_' . $name . '_migrate.php';
     }
 
     /**
